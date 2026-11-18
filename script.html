@@ -1,0 +1,521 @@
+/* ==========================================================================
+   1. BASE DE DATOS SIMULADA DE PRODUCTOS
+   ========================================================================== */
+const PRODUCTS = [
+  {
+    id: 1,
+    name: "Top Deportivo Seamless Fucsia",
+    brand: "alo",
+    category: "remate deportivo",
+    price: 10,
+    oldPrice: 28,
+    promo: "REMATE $10",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 2,
+    name: "Pack 2x Shorts Ciclista Sculpt",
+    brand: "shein",
+    category: "remate deportivo",
+    price: 15,
+    oldPrice: 30,
+    promo: "PROMO 2x$15",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 3,
+    name: "Tenis Running Air Pulse Pink",
+    brand: "nike",
+    category: "zapatos damas",
+    price: 65,
+    oldPrice: 95,
+    promo: "-30% OFF",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 4,
+    name: "Zapatillas Urbanas Ultraboost",
+    brand: "adidas",
+    category: "zapatos caballeros",
+    price: 75,
+    oldPrice: 110,
+    promo: "TOP VENTAS",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 5,
+    name: "Leggings Compresión High-Waist",
+    brand: "fashion nova",
+    category: "remate deportivo",
+    price: 10,
+    oldPrice: 32,
+    promo: "REMATE $10",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 6,
+    name: "Bolso Gym Duffel Rosa Pastel",
+    brand: "hero",
+    category: "bolsos",
+    price: 25,
+    oldPrice: 45,
+    promo: "LIQUIDACIÓN",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 7,
+    name: "Pack 2x Camisetas Dry-Fit Pro",
+    brand: "adidas",
+    category: "remate deportivo",
+    price: 15,
+    oldPrice: 36,
+    promo: "PROMO 2x$15",
+    featured: false,
+    image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 8,
+    name: "Tenis Deportivos Junior Spark",
+    brand: "nike",
+    category: "zapatos niñas",
+    price: 38,
+    oldPrice: 55,
+    promo: "OFERTA",
+    featured: false,
+    image: "https://images.unsplash.com/photo-1514989940723-e8e51635b782?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 9,
+    name: "Zapatillas Kids Runner Velocity",
+    brand: "adidas",
+    category: "zapatos niños",
+    price: 35,
+    oldPrice: 50,
+    promo: "OFERTA",
+    featured: false,
+    image: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 10,
+    name: "Botas Outdoor & Training Grip",
+    brand: "hero",
+    category: "botas",
+    price: 58,
+    oldPrice: 85,
+    promo: "NUEVO",
+    featured: false,
+    image: "https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 11,
+    name: "Mini Mochila Crossbody Sport",
+    brand: "shein",
+    category: "bolsos",
+    price: 10,
+    oldPrice: 22,
+    promo: "REMATE $10",
+    featured: false,
+    image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    id: 12,
+    name: "Set 2x Medias + Muñequeras",
+    brand: "alo",
+    category: "remate deportivo",
+    price: 15,
+    oldPrice: 26,
+    promo: "PROMO 2x$15",
+    featured: false,
+    image: "https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?auto=format&fit=crop&w=600&q=80"
+  }
+];
+
+/* ==========================================================================
+   2. ESTADO DEL CARRITO (PERSISTENTE CON LOCALSTORAGE)
+   ========================================================================== */
+let cart = JSON.parse(localStorage.getItem('fucsiaFitCart')) || [];
+
+function saveCart() {
+  localStorage.setItem('fucsiaFitCart', JSON.stringify(cart));
+  updateCartUI();
+}
+
+function addToCart(productId) {
+  const product = PRODUCTS.find(p => p.id === productId);
+  if (!product) return;
+
+  const existing = cart.find(item => item.id === productId);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({ ...product, qty: 1 });
+  }
+
+  saveCart();
+  showToast(`¡${product.name} agregado al carrito!`);
+}
+
+function removeFromCart(productId) {
+  cart = cart.filter(item => item.id !== productId);
+  saveCart();
+}
+
+function updateCartUI() {
+  const countEl = document.getElementById('cart-count');
+  const itemsContainer = document.getElementById('cart-items');
+  const totalEl = document.getElementById('cart-total');
+
+  const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+  const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+
+  if (countEl) countEl.textContent = totalItems;
+  if (totalEl) totalEl.textContent = `$${totalPrice.toFixed(2)}`;
+
+  if (itemsContainer) {
+    if (cart.length === 0) {
+      itemsContainer.innerHTML = `<p style="text-align:center; color:#646478; margin-top:40px;">Tu carrito está vacío. ¡Aprovecha los remates desde $10!</p>`;
+    } else {
+      itemsContainer.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <img src="${item.image}" alt="${item.name}">
+          <div class="cart-item-info">
+            <div class="cart-item-title">${item.name}</div>
+            <div class="cart-item-price">$${item.price} x ${item.qty}</div>
+          </div>
+          <button class="remove-item" onclick="removeFromCart(${item.id})">Eliminar</button>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+/* ==========================================================================
+   3. INYECCIÓN DE NAVBAR, CARRITO Y FOOTER EN TODAS LAS PÁGINAS
+   ========================================================================== */
+function renderLayout() {
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+  const navbarHTML = `
+    <header class="navbar">
+      <div class="container nav-content">
+        <a href="index.html" class="logo">PULSE<span>FIT</span></a>
+        
+        <nav class="nav-links">
+          <a href="index.html" class="${currentPage === 'index.html' ? 'active' : ''}">Inicio</a>
+          <a href="catalogo.html" class="${currentPage === 'catalogo.html' ? 'active' : ''}">Catálogo</a>
+          <a href="remates.html" class="${currentPage === 'remates.html' ? 'active' : ''}">Remates $10 & 2x$15</a>
+          <a href="nosotros.html" class="${currentPage === 'nosotros.html' ? 'active' : ''}">Guía & Nosotros</a>
+          <a href="index.html#contacto">Contacto</a>
+        </nav>
+
+        <div class="nav-actions">
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="global-search" placeholder="Buscar ropa, Nike, tenis...">
+          </div>
+          <button class="cart-btn" id="open-cart" aria-label="Abrir carrito">
+            🛍️ <span class="cart-count" id="cart-count">0</span>
+          </button>
+          <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menú">☰</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="mobile-nav" id="mobile-nav">
+      <a href="index.html">Inicio</a>
+      <a href="catalogo.html">Catálogo Completo</a>
+      <a href="remates.html">🔥 Remates $10 y 2x$15</a>
+      <a href="nosotros.html">Guía de Tallas & Nosotros</a>
+      <a href="index.html#contacto">Contacto</a>
+    </div>
+
+    <!-- Drawer del Carrito -->
+    <div class="cart-modal-overlay" id="cart-modal">
+      <div class="cart-drawer">
+        <div class="cart-header">
+          <h3>Tu Carrito 🛍️</h3>
+          <button class="close-cart" id="close-cart">✕</button>
+        </div>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="cart-footer">
+          <div class="cart-total-row">
+            <span>Total estimado:</span>
+            <span id="cart-total">$0.00</span>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="checkoutAlert()">Finalizar Compra</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  `;
+
+  const footerHTML = `
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <a href="index.html" class="logo" style="color:#fff;">PULSE<span>FIT</span></a>
+            <p style="margin-top:12px;">Tu tienda deportiva juvenil con las mejores marcas originales y precios de liquidación imbatibles.</p>
+          </div>
+          <div>
+            <h4>Explorar</h4>
+            <ul>
+              <li><a href="index.html">Inicio</a></li>
+              <li><a href="catalogo.html">Catálogo por Categoría</a></li>
+              <li><a href="remates.html">Zona de Remates ($10 - $75)</a></li>
+              <li><a href="nosotros.html">Guía de Tallas</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Síguenos</h4>
+            <p>Entérate primero de los drops y promos 2x$15.</p>
+            <div class="social-links">
+              <a href="#" class="pill-badge">Instagram</a>
+              <a href="#" class="pill-badge">TikTok</a>
+              <a href="#" class="pill-badge">WhatsApp</a>
+            </div>
+          </div>
+          <div>
+            <h4>Métodos de Pago</h4>
+            <p>Pagos 100% seguros y verificados:</p>
+            <div class="payment-methods">
+              <span class="pill-badge">Visa / Master</span>
+              <span class="pill-badge">PayPal</span>
+              <span class="pill-badge">Zelle</span>
+              <span class="pill-badge">Pago Móvil</span>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          &copy; 2026 PULSEFIT Sportwear. Todos los derechos reservados.
+        </div>
+      </div>
+    </footer>
+  `;
+
+  document.body.insertAdjacentHTML('afterbegin', navbarHTML);
+  document.body.insertAdjacentHTML('beforeend', footerHTML);
+
+  setupLayoutEvents();
+  updateCartUI();
+}
+
+function setupLayoutEvents() {
+  const mobileBtn = document.getElementById('mobile-menu-btn');
+  const mobileNav = document.getElementById('mobile-nav');
+  const openCart = document.getElementById('open-cart');
+  const closeCart = document.getElementById('close-cart');
+  const cartModal = document.getElementById('cart-modal');
+  const searchInput = document.getElementById('global-search');
+
+  mobileBtn?.addEventListener('click', () => mobileNav.classList.toggle('open'));
+  openCart?.addEventListener('click', () => cartModal.classList.add('open'));
+  closeCart?.addEventListener('click', () => cartModal.classList.remove('open'));
+  cartModal?.addEventListener('click', (e) => {
+    if (e.target === cartModal) cartModal.classList.remove('open');
+  });
+
+  // Buscador rápido: redirige al catálogo o filtra en vivo
+  searchInput?.addEventListener('keyup', (e) => {
+    const query = e.target.value.trim().toLowerCase();
+    if (e.key === 'Enter' && !window.location.pathname.includes('catalogo.html')) {
+      window.location.href = `catalogo.html?search=${encodeURIComponent(query)}`;
+    } else if (document.getElementById('catalog-grid')) {
+      filterCatalog();
+    }
+  });
+}
+
+/* ==========================================================================
+   4. RENDERIZADO DE TARJETAS DE PRODUCTO
+   ========================================================================== */
+function createProductCard(product) {
+  return `
+    <article class="product-card reveal active">
+      <div class="product-img-wrap">
+        <img src="${product.image}" alt="${product.name}" loading="lazy">
+        <div class="card-badges">
+          <span class="brand-tag">${product.brand}</span>
+          <span class="badge-promo">${product.promo}</span>
+        </div>
+      </div>
+      <div class="product-info">
+        <span class="product-cat">${product.category}</span>
+        <h3 class="product-title">${product.name}</h3>
+        <div class="product-price-row">
+          <span class="price-current">$${product.price}</span>
+          <span class="price-old">$${product.oldPrice}</span>
+        </div>
+        <button class="add-cart-btn" onclick="addToCart(${product.id})">
+          + Agregar al Carrito
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+/* ==========================================================================
+   5. LÓGICA ESPECÍFICA POR PÁGINA
+   ========================================================================== */
+function initPageContent() {
+  // 1. Página Principal (Productos Destacados)
+  const featuredGrid = document.getElementById('featured-products-grid');
+  if (featuredGrid) {
+    const featured = PRODUCTS.filter(p => p.featured);
+    featuredGrid.innerHTML = featured.map(createProductCard).join('');
+  }
+
+  // 2. Página Catálogo (Filtros dinámicos)
+  const catalogGrid = document.getElementById('catalog-grid');
+  if (catalogGrid) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const catParam = urlParams.get('cat');
+    const brandParam = urlParams.get('brand');
+    const searchParam = urlParams.get('search');
+
+    if (catParam && document.getElementById('filter-category')) {
+      document.getElementById('filter-category').value = catParam;
+    }
+    if (brandParam && document.getElementById('filter-brand')) {
+      document.getElementById('filter-brand').value = brandParam;
+    }
+    if (searchParam && document.getElementById('global-search')) {
+      document.getElementById('global-search').value = searchParam;
+    }
+
+    filterCatalog();
+  }
+
+  // 3. Página Remates (Solo promos $10 y 2x$15)
+  const rematesGrid = document.getElementById('remates-grid');
+  if (rematesGrid) {
+    const remates = PRODUCTS.filter(p => p.price <= 15);
+    rematesGrid.innerHTML = remates.map(createProductCard).join('');
+  }
+}
+
+function filterCatalog() {
+  const grid = document.getElementById('catalog-grid');
+  if (!grid) return;
+
+  const catValue = document.getElementById('filter-category')?.value || 'all';
+  const brandValue = document.getElementById('filter-brand')?.value || 'all';
+  const priceValue = document.getElementById('filter-price')?.value || 'all';
+  const searchValue = document.getElementById('global-search')?.value.toLowerCase() || '';
+
+  const filtered = PRODUCTS.filter(p => {
+    const matchCat = catValue === 'all' || p.category === catValue;
+    const matchBrand = brandValue === 'all' || p.brand === brandValue;
+    const matchSearch = p.name.toLowerCase().includes(searchValue) || p.brand.toLowerCase().includes(searchValue);
+    
+    let matchPrice = true;
+    if (priceValue === '10') matchPrice = p.price === 10;
+    if (priceValue === '15') matchPrice = p.price === 15;
+    if (priceValue === '75') matchPrice = p.price <= 75;
+
+    return matchCat && matchBrand && matchSearch && matchPrice;
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding:40px; color:#646478;">No encontramos productos con esos filtros. ¡Intenta con otra combinación!</p>`;
+  } else {
+    grid.innerHTML = filtered.map(createProductCard).join('');
+  }
+}
+
+/* ==========================================================================
+   6. VALIDACIÓN DE FORMULARIO DE CONTACTO Y UTILIDADES
+   ========================================================================== */
+function setupContactForm() {
+  const form = document.getElementById('contact-form');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let isValid = true;
+
+    const name = document.getElementById('name');
+    const email = document.getElementById('email');
+    const message = document.getElementById('message');
+
+    // Validar Nombre
+    if (name.value.trim().length < 3) {
+      document.getElementById('err-name').style.display = 'block';
+      isValid = false;
+    } else {
+      document.getElementById('err-name').style.display = 'none';
+    }
+
+    // Validar Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.value.trim())) {
+      document.getElementById('err-email').style.display = 'block';
+      isValid = false;
+    } else {
+      document.getElementById('err-email').style.display = 'none';
+    }
+
+    // Validar Mensaje
+    if (message.value.trim().length < 10) {
+      document.getElementById('err-message').style.display = 'block';
+      isValid = false;
+    } else {
+      document.getElementById('err-message').style.display = 'none';
+    }
+
+    if (isValid) {
+      document.getElementById('form-success').style.display = 'block';
+      form.reset();
+      setTimeout(() => {
+        document.getElementById('form-success').style.display = 'none';
+      }, 5000);
+    }
+  });
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+function checkoutAlert() {
+  if (cart.length === 0) {
+    showToast("Tu carrito está vacío 😅");
+    return;
+  }
+  alert("¡Gracias por tu compra en PULSEFIT! Redirigiendo a la pasarela de pago...");
+  cart = [];
+  saveCart();
+  document.getElementById('cart-modal').classList.remove('open');
+}
+
+// Animación suave al hacer scroll
+function setupScrollReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('active');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+// Inicialización Global
+document.addEventListener('DOMContentLoaded', () => {
+  renderLayout();
+  initPageContent();
+  setupContactForm();
+  setupScrollReveal();
+});
